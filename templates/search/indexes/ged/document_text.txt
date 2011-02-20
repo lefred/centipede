@@ -1,0 +1,4 @@
+{{ object.name }}
+{{ object.genre }}
+{{ object.user.get_full_name }}
+{{ object.scanning_date }}

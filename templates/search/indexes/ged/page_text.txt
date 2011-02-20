@@ -1,0 +1,3 @@
+{{ object.file_name }}
+{{ object.ocr }}
+{{ object.barcodes }}
