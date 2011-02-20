@@ -34,7 +34,6 @@ def consume_msg(channel):
     document_queue = Queue("compta", exchange=compta_exchange,
                            routing_key="compta")
     consumer = Consumer(channel, document_queue, callbacks=[process_document])
-    #consumer.register_callback(process_document)
     consumer.consume()
     while True:
         channel.connection.drain_events()
