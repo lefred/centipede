@@ -19,7 +19,11 @@
 
             {% for result in page.object_list %}
                 <p>
-                <a href="/ged/document/{{ result.object.id }}">{{ result.object }}</a> {{ result.score }}
+                {% if result.object.document_id %}
+                    <a href="/ged/document/{{ result.object.document_id }}">{{ result.object }}</a> {{ result.score }}
+                {% else %}
+                    <a href="/ged/document/{{ result.object.id }}">{{ result.object }}</a> {{ result.score }}
+                {% endif %}
                 </p>
             {% empty %}
                 <p>No results found.</p>

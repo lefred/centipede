@@ -3,7 +3,7 @@
 import os
 from PIL import Image
 from pyPdf import PdfFileWriter, PdfFileReader
-from arsia.ged.compta.logger import logger
+from logger import logger
 
 def convert_file(infile, file_type):
     if file_type == "TIFF":

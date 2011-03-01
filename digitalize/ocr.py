@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from arsia.ged.compta.logger import logger
+from logger import logger
 import subprocess
 import os
 

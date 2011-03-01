@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from arsia.ged.compta.logger import logger
+from logger import logger
 import sane
 import zbar
 
@@ -15,6 +15,10 @@ def init_scanner(config):
     scanner.mode = config.get("scanner","mode")
     scanner.resolution = int(config.get("scanner", "resolution"))
     scanner.source = config.get("scanner", "source")
+    if [True for i in config.items("input")  if i[0] == "type"]:
+        logger.debug("Specifying format")
+        scanner.br_x = float(config.get("input","size_x"))
+        scanner.br_y = float(config.get("input","size_y"))
     scanner.swcrop = 1
     return scanner
 
@@ -32,6 +36,7 @@ def start_scanning(scanner):
                 (max_occurence, most_present) = c
                 total += max_occurence
 
+        logger.debug("BLACK : %f" % (float(max_occurence) / total * 100))
         if (float(max_occurence) / total * 100) < 99.1:
             scanner = zbar.ImageScanner()
             scanner.parse_config('enable')

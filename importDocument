@@ -1,0 +1,6 @@
+#!/usr/bin/python
+
+from digitalize import digitalize
+
+if __name__ == '__main__':
+    digitalize.main()

@@ -1,3 +1,4 @@
+import socket
 from centipede.ged.models import Page, Document
 from datetime import datetime
 from django.contrib.auth.models import User
@@ -10,12 +11,13 @@ def create_connection():
     conn = BrokerConnection("localhost",
                             "fred",
                             "fred123",
-                            "arsia")
+                            "home")
     channel = conn.channel()
-
     return channel
 
 def process_document(document, message):
+    print "document: %s" % document
+    print "message: %s" % message
     user = User.objects.get(username="fred")
     s_date = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
     doc = Document(name = document.name, genre = document.genre, scanning_date = s_date, user = user)
@@ -23,25 +25,38 @@ def process_document(document, message):
     print "document %s saved" % doc.name
     i = 0
     for sfile in document.files:
-        page = Page(file_name = sfile, ocr = document.ocr[i], barcodes = document.barcodes[i], document = doc)
+        try:
+            v_ocr = document.ocr[i]
+        except IndexError:
+            v_ocr = None
+        try:
+            v_barcodes = document.barcodes[i]
+        except IndexError:
+            v_barcodes = None
+        page = Page(file_name = sfile, ocr = v_ocr, barcodes = v_barcodes, document = doc)
         i += 1
         page.save()
         print "    page %s saved" % sfile
     message.ack()
 
 def consume_msg(channel):
-    compta_exchange = Exchange("compta", "direct", durable=True)
-    document_queue = Queue("compta", exchange=compta_exchange,
-                           routing_key="compta")
-    consumer = Consumer(channel, document_queue, callbacks=[process_document])
+    private_exchange = Exchange("private", "direct", durable=True)
+    document_queue = Queue("private", exchange=private_exchange,
+                           routing_key="private")
+    consumer = Consumer(channel, document_queue)
+    consumer.register_callback(process_document)
     consumer.consume()
-    while True:
-        channel.connection.drain_events()
-
+    try:
+        while True:
+            channel.connection.drain_events(timeout=5)
+    except socket.timeout:
+        return HttpResponse("ok")
+    else:
+        return HttpResponse("error")
 
 def consume_document(request):
     channel = create_connection()
-    consume_msg(channel)
+    return consume_msg(channel)
 
 def show_document(request, document_id=''):
     document = Document.objects.get(id=document_id)
@@ -51,5 +66,3 @@ def show_document(request, document_id=''):
     c = Context({"document": document,
                  "pages": pages})
     return HttpResponse(t.render(c))
-
-

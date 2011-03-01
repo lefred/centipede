@@ -7,7 +7,7 @@
         {{ document.scanning_date }}<br>
         {% for page in pages %}
             <h3>{{ page.file_name }}</h3>
-            <a href="file://{{ page.file_name }}">open</a>
+            <a href="http://localhost/centipede/{{ page.file_web }}">open</a>
             <pre>{{ page.ocr }}</pre>
             <strong>barcodes: </strong>{{ page.barcodes }}
         {% endfor %}

@@ -2,13 +2,13 @@
 import re
 import os.path
 from datetime import datetime
-from arsia.ged.compta.config import readConfig, parseCmdLineOpt
-from arsia.ged.compta.connection import create_connection, produce_msg
-from arsia.ged.compta.convert import convert_file, merge_files
-from arsia.ged.compta.document import Document
-from arsia.ged.compta.logger import logger
-from arsia.ged.compta.ocr import Ocr
-from arsia.ged.compta.scanner import init_scanner, start_scanning
+from config import readConfig, parseCmdLineOpt
+from connection import create_connection, produce_msg
+from convert import convert_file, merge_files
+from document import Document
+from logger import logger
+from ocr import Ocr
+from scanner import init_scanner, start_scanning
 
 def main():
     document = None
@@ -21,16 +21,16 @@ def main():
     scanner = init_scanner(config) 
     for output, image_bar in start_scanning(scanner):
         for symbol in image_bar:
-            print 'decoded', symbol.type, 'symbol', '"%s"' % symbol.data
-            for clef, valeur in config.items("compta"):
-                if re.match(("^%s.*" % valeur), symbol.data):
+            logger.debug("symbol %s" % symbol.data)
+            for clef, valeur in config.items("type"):
+                if re.match(valeur, symbol.data):
                     page_num = 0
                     logger.debug("new document detected")
                     document = Document()
                     logger.debug(document)
                     document.name = symbol.data
                     document.genre = clef
-                    #documents.append(document)
+                    documents.append(document)
                     break
             if re.match(("^%s.*" % config.get("workflow", "key")), symbol.data):
                 document.workflows.append(symbol.data)
@@ -41,7 +41,7 @@ def main():
             document = Document()
             filename = "undefined_%s_%s.tiff" % (datetime.today().strftime("%Y%m%d-%H%M%S"), str(page_num))
             document.name = "undefined_%s" % datetime.today().strftime("%Y%m%d-%H%M%S")
-        documents.append(document)
+            documents.append(document)
         filepath = os.path.join(config.get("output", "tmp_dir"), filename)
         output.save(filepath, 'TIFF')
         document.files.append(filepath)
@@ -59,14 +59,19 @@ def main():
             if input_cmd == "quit":
                 break
     for document in documents:
+        logger.debug("documents : %s" % documents)
+        logger.debug("document : %s" % document)
         old_files = document.files
+        logger.debug("  old_files :")
+        logger.debug(old_files)
         document.files = []
         file_format = config.get("output", "file_format")
         for image in old_files:
+            logger.debug("     image : %s" % image)
             document.files.append(convert_file(image,file_format))
         if file_format == "PDF":
             new_file = merge_files(document.files,file_format)
             document.files = [new_file]
+        logger.debug("we gonna produce a new message in the queue for %s" % document)
         produce_msg(channel, document)
-
 

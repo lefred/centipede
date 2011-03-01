@@ -2,7 +2,7 @@
 
 from kombu.connection import BrokerConnection
 from kombu.messaging import Consumer, Exchange, Producer, Queue
-
+from logger import logger
 
 def create_connection(config):
     conn = BrokerConnection(config.get("connection", "hostname"),
@@ -14,19 +14,20 @@ def create_connection(config):
     return channel
 
 def produce_msg(channel, document):
-    compta_exchange = Exchange("compta", "direct", durable=True)
-    producer = Producer(channel, exchange=compta_exchange, serializer="pickle")
-    producer.publish(document, routing_key="compta")
+    private_exchange = Exchange("private", "direct", durable=True)
+    producer = Producer(channel, exchange=private_exchange, serializer="pickle")
+    producer.publish(document, routing_key="private")
+    logger.debug("message produced")
 
 def process_document(document, message):
-    print document.ocr
+    print document
+    message.ack()
 
 def consume_msg(channel):
-    compta_exchange = Exchange("compta", "direct", durable=True)
-    document_queue = Queue("compta", exchange=compta_exchange,
-                           routing_key="compta")
+    private_exchange = Exchange("private", "direct", durable=True)
+    document_queue = Queue("private", exchange=private_exchange,
+                           routing_key="private")
     consumer = Consumer(channel, document_queue, callbacks=[process_document])
-    consumer.register_callback(process_document)
     #consumer.register_callback(process_document)
     consumer.consume()
     while True:

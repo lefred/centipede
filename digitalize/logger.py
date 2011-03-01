@@ -2,7 +2,7 @@
 import sys
 import logging
 
-logger = logging.getLogger('arsia.ged.compta')
+logger = logging.getLogger('centipede.digitalize')
 logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - \

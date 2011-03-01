@@ -1,3 +1,4 @@
 {{ object.file_name }}
 {{ object.ocr }}
 {{ object.barcodes }}
+{{ object.document_id }}
