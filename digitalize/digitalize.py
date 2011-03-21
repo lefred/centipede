@@ -3,7 +3,7 @@ import re
 import os.path
 from datetime import datetime
 from config import readConfig, parseCmdLineOpt
-from connection import create_connection, produce_msg
+from connection import create_connection, produce_msg_document
 from convert import convert_file, merge_files
 from document import Document
 from logger import logger
@@ -73,5 +73,5 @@ def main():
             new_file = merge_files(document.files,file_format)
             document.files = [new_file]
         logger.debug("we gonna produce a new message in the queue for %s" % document)
-        produce_msg(channel, document)
+        produce_msg_document(channel, document, config.get("queues", "documents"))
 

@@ -13,10 +13,16 @@ def create_connection(config):
 
     return channel
 
-def produce_msg(channel, document):
-    private_exchange = Exchange("private", "direct", durable=True)
+def produce_msg_document(channel, document, queue_name):
+    private_exchange = Exchange(queue_name, "direct", durable=True)
     producer = Producer(channel, exchange=private_exchange, serializer="pickle")
-    producer.publish(document, routing_key="private")
+    producer.publish(document, routing_key=queue_name)
+    logger.debug("message produced")
+
+def produce_msg_image(channel, image_name, image, queue_name):
+    private_exchange = Exchange(queue_name, "direct", durable=True)
+    producer = Producer(channel, exchange=private_exchange, serializer="pickle")
+    producer.publish(document, routing_key=queue_name)
     logger.debug("message produced")
 
 def process_document(document, message):
